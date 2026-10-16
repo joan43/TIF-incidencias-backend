@@ -1,0 +1,137 @@
+{
+  "info": {
+    "_postman_id": "fbb22201-4ee1-4bbf-a64f-9efbe91e0f42",
+    "name": "TIF - Sistema de Gestión de Incidencias Técnicas",
+    "description": "Flujo de prueba: login de usuario, alta y comentario; login de técnico, toma, comentario y resolución. Primero ejecutar la API Laravel y luego las solicitudes en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "category_id", "value": "", "type": "string" },
+    { "key": "incident_id", "value": "", "type": "string" },
+    { "key": "user_email", "value": "usuario@test.com", "type": "string" },
+    { "key": "technician_email", "value": "tecnico@test.com", "type": "string" },
+    { "key": "password", "value": "password123", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 - Login como usuario",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/login", "host": ["{{baseUrl}}"], "path": ["api", "login"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Login usuario exitoso', function () { pm.response.to.have.status(200); });", "if (pm.response.code === 200) { pm.collectionVariables.set('token', pm.response.json().token); }"] } }]
+    },
+    {
+      "name": "02 - Listar categorías",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/categorias", "host": ["{{baseUrl}}"], "path": ["api", "categorias"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Categorías disponibles', function () { pm.response.to.have.status(200); });", "const body = pm.response.json();", "if (body.data && body.data.length > 0) { pm.collectionVariables.set('category_id', String(body.data[0].id)); }"] } }]
+    },
+    {
+      "name": "03 - Crear incidencia",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"La computadora no enciende\",\n  \"description\": \"La computadora del aula 2 no enciende desde esta mañana.\",\n  \"category_id\": {{category_id}}\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/incidencias", "host": ["{{baseUrl}}"], "path": ["api", "incidencias"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Incidencia creada y ABIERTA', function () { pm.response.to.have.status(201); pm.expect(pm.response.json().data.status).to.eql('ABIERTA'); });", "if (pm.response.code === 201) { pm.collectionVariables.set('incident_id', String(pm.response.json().data.id)); }"] } }]
+    },
+    {
+      "name": "04 - Listar mis incidencias (filtro por estado)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/incidencias?status=ABIERTA&category_id={{category_id}}", "host": ["{{baseUrl}}"], "path": ["api", "incidencias"], "query": [{ "key": "status", "value": "ABIERTA" }, { "key": "category_id", "value": "{{category_id}}" }] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Listado del usuario', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().data).to.be.an('array'); });"] } }]
+    },
+    {
+      "name": "05 - Ver detalle de mi incidencia",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/incidencias/{{incident_id}}", "host": ["{{baseUrl}}"], "path": ["api", "incidencias", "{{incident_id}}"] }
+      }
+    },
+    {
+      "name": "06 - Agregar comentario como usuario",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"comment\": \"La computadora dejó de funcionar hoy por la mañana.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/incidencias/{{incident_id}}/comentarios", "host": ["{{baseUrl}}"], "path": ["api", "incidencias", "{{incident_id}}", "comentarios"] }
+      }
+    },
+    {
+      "name": "07 - Login como técnico",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{technician_email}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/login", "host": ["{{baseUrl}}"], "path": ["api", "login"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Login técnico exitoso', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().user.role).to.eql('tecnico'); });", "if (pm.response.code === 200) { pm.collectionVariables.set('token', pm.response.json().token); }"] } }]
+    },
+    {
+      "name": "08 - Ver todas las incidencias como técnico",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/incidencias", "host": ["{{baseUrl}}"], "path": ["api", "incidencias"] }
+      }
+    },
+    {
+      "name": "09 - Tomar incidencia",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/incidencias/{{incident_id}}/tomar", "host": ["{{baseUrl}}"], "path": ["api", "incidencias", "{{incident_id}}", "tomar"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Incidencia tomada', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().data.status).to.eql('EN PROCESO'); });"] } }]
+    },
+    {
+      "name": "10 - Agregar comentario como técnico",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"comment\": \"Estoy revisando el equipo y su conexión eléctrica.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/incidencias/{{incident_id}}/comentarios", "host": ["{{baseUrl}}"], "path": ["api", "incidencias", "{{incident_id}}", "comentarios"] }
+      }
+    },
+    {
+      "name": "11 - Resolver incidencia",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"resolution\": \"Se reconectó el cable de alimentación y se comprobó que la computadora inicia correctamente.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/incidencias/{{incident_id}}/resolver", "host": ["{{baseUrl}}"], "path": ["api", "incidencias", "{{incident_id}}", "resolver"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Incidencia resuelta', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().data.status).to.eql('RESUELTA'); pm.expect(pm.response.json().data.resolution).to.be.a('string').and.not.empty; });"] } }]
+    },
+    {
+      "name": "12 - Listar comentarios",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/incidencias/{{incident_id}}/comentarios", "host": ["{{baseUrl}}"], "path": ["api", "incidencias", "{{incident_id}}", "comentarios"] }
+      }
+    },
+    {
+      "name": "13 - Cerrar sesión del técnico",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/logout", "host": ["{{baseUrl}}"], "path": ["api", "logout"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Logout exitoso', function () { pm.response.to.have.status(200); });", "pm.collectionVariables.unset('token');"] } }]
+    }
+  ]
+}
