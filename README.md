@@ -1,4 +1,4 @@
-[![Backend CI](https://github.com/joan43/TIF-incidencias-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/joan43/TIF-incidencias-backend/actions/workflows/ci.yml)
+[![Backend CI](https://github.com/joan43/TIF-incidencias-backend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/joan43/TIF-incidencias-backend/actions/workflows/ci.yml)
 
 # TIF — Sistema de Gestión de Incidencias Técnicas (Backend)
 
