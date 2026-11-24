@@ -1,3 +1,5 @@
+[![Backend CI](https://github.com/joan43/TIF-incidencias-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/joan43/TIF-incidencias-backend/actions/workflows/ci.yml)
+
 # TIF — Sistema de Gestión de Incidencias Técnicas (Backend)
 
 API REST independiente para el Trabajo Integrador Final de Desarrollo de Software 2026. Implementa autenticación con Laravel Sanctum, roles `usuario` y `tecnico`, persistencia MySQL/MariaDB y respuestas JSON. No construye la interfaz web ni utiliza Blade para el frontend.
@@ -49,6 +51,8 @@ API REST independiente para el Trabajo Integrador Final de Desarrollo de Softwar
    ```
 
    El seeder crea las cinco categorías y las dos cuentas de prueba indicadas abajo. La migración de reparación también completa tablas creadas por la versión inicial incompleta del proyecto.
+
+
 8. Iniciá el servidor de desarrollo:
 
    ```bat
